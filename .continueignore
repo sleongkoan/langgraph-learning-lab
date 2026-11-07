@@ -1,0 +1,5 @@
+# Continue.dev: exclude exercise files from AI context and autocomplete so
+# they're written by hand. Best-effort -- see AI_TUTOR.md for the reliable
+# fix (turn off inline autocomplete while doing the exercises).
+modules/*/exercise.py
+modules/*/test_exercise.py

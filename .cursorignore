@@ -1,0 +1,6 @@
+# Exercise files are meant to be written by hand as part of this learning
+# repo -- excluded from Cursor's indexing/context and Tab autocomplete so
+# it doesn't do the exercises for you. This is best-effort: Cursor still
+# respects your own inline chat requests on these files if you ask directly.
+modules/*/exercise.py
+modules/*/test_exercise.py
