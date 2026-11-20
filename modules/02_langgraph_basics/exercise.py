@@ -36,12 +36,15 @@ def increment(state: CounterState):
     to return {"count": ..., "history": [...]} with the new count appended.
     """
     new_count = state["count"] + 1
-    return new_count
+    history = state["history"] + [new_count]
+    return {"count": new_count, "history": history}
 
 
 def double(state: CounterState) -> dict:
     """TODO: return {'count': state['count'] * 2, 'history': [...]} with the new value appended."""
-    raise NotImplementedError
+    new_count = state["count"] * 2
+    history = state["history"] + [new_count]
+    return {"count": new_count, "history": history}
 
 
 def part1_linear_graph():
@@ -53,7 +56,15 @@ def part1_linear_graph():
     4. Compile it into `app` (graph.compile()).
     5. Invoke with {"count": 0, "history": []} and print the result.
     """
-    raise NotImplementedError
+    graph = StateGraph(CounterState)
+    graph.add_node("increment", increment)
+    graph.add_node("double", double)
+    graph.add_edge(START, "increment")
+    graph.add_edge("increment", "double")
+    graph.add_edge("double", END)
+    app = graph.compile()
+    result = app.invoke({"count": 0, "history": []})
+    print(result)
 
 
 # ---------------------------------------------------------------------------
@@ -83,7 +94,7 @@ def route_even_or_odd(state: RouteState) -> str:
     Whatever string you return gets looked up in the path_map passed to
     add_conditional_edges to decide which node runs next.
     """
-    raise NotImplementedError
+    return "even" if state["number"] % 2 == 0 else "odd"
 
 
 def part2_conditional_graph():
@@ -97,7 +108,20 @@ def part2_conditional_graph():
     5. Compile, invoke once with {"number": 7, "label": ""} and once with
        {"number": 4, "label": ""}, print both results.
     """
-    raise NotImplementedError
+    graph = StateGraph(RouteState)
+    graph.add_node("classify", classify)
+    graph.add_node("handle_even", handle_even)
+    graph.add_node("handle_odd", handle_odd)
+    graph.add_edge(START, "classify")
+    graph.add_conditional_edges("classify", route_even_or_odd,
+                                {"even": "handle_even", "odd": "handle_odd"})
+    graph.add_edge("handle_even", END)
+    graph.add_edge("handle_odd", END)
+    app = graph.compile()
+    result1 = app.invoke({"number": 7, "label": ""})
+    result2 = app.invoke({"number": 4, "label": ""})
+    print(result1)
+    print(result2)
 
 
 # ---------------------------------------------------------------------------
@@ -122,7 +146,9 @@ def call_model(state: ChatState) -> dict:
     way part 1's plain `count: int` field did. Different fields in the same
     state can have completely different merge behavior.
     """
-    raise NotImplementedError
+    model = get_chat_model()
+    response = model.invoke(state["messages"])
+    return {"messages": [response]}
 
 
 def part3_llm_node():
@@ -135,7 +161,14 @@ def part3_llm_node():
     4. Print the full final messages list (should have 2 messages: your
        HumanMessage and the model's AIMessage).
     """
-    raise NotImplementedError
+    graph = StateGraph(ChatState)
+    graph.add_node("call_model", call_model)
+    graph.add_edge(START, "call_model")
+    graph.add_edge("call_model", END)
+    app = graph.compile()
+    final_state = app.invoke(
+        {"messages": [HumanMessage(content="What is 2+2? Answer in one word.")]})
+    print(final_state["messages"])
 
 
 if __name__ == "__main__":
