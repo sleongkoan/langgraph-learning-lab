@@ -33,7 +33,10 @@ def part1_basic_call():
        in one sentence.
     3. Print the response's .content
     """
-    raise NotImplementedError
+    model = get_chat_model()
+    response = model.invoke(
+        [HumanMessage(content="Explain what LangGraph is in one sentence.")])
+    print(response.content)
 
 
 def part2_system_and_history():
@@ -48,7 +51,28 @@ def part2_system_and_history():
     This mirrors how real chat state is just a growing list of messages --
     there's no hidden session on the server side.
     """
-    raise NotImplementedError
+    model = get_chat_model()
+    first_messages = [
+        SystemMessage(
+            content="You are a terse backend engineer who answers in one sentence."),
+        HumanMessage(content="What's LangGraph?"),]
+
+    first_response = model.invoke(first_messages)
+
+    second_messages = [
+        AIMessage(content=first_response.content),
+        HumanMessage(content="How does it work?"),
+    ]
+
+    second_response = model.invoke(first_messages + second_messages)
+
+    last_messages = [
+        AIMessage(content=second_response.content),
+        HumanMessage(content="Can you give an example?"),
+    ]
+    final_response = model.invoke(
+        first_messages + second_messages + last_messages)
+    print(final_response.content)
 
 
 def part3_prompt_template():
@@ -63,14 +87,21 @@ def part3_prompt_template():
     Why this matters: production code never hardcodes prompt strings inline --
     templates let you version/reuse prompts and keep them out of business logic.
     """
-    raise NotImplementedError
+    model = get_chat_model()
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", "You are an expert on {topic}."),
+        ("human", "Explain {topic} to {audience}."),
+    ])
+    messages = prompt.invoke(
+        {"topic": "GraphQL", "audience": "a junior engineer"})
+    response = model.invoke(messages)
+    print(response.content)
 
 
 @tool
 def get_word_length(word: str) -> int:
     """Return the number of characters in a word."""
-    # TODO: implement this (one line)
-    raise NotImplementedError
+    return len(word)
 
 
 def part4_tool_calling():
@@ -85,7 +116,11 @@ def part4_tool_calling():
     it *requests* a function call with structured arguments, and your code
     decides whether/how to execute it.
     """
-    raise NotImplementedError
+    model = get_chat_model()
+    model = model.bind_tools([get_word_length])
+    response = model.invoke(
+        [HumanMessage(content="How many letters are in 'LangGraph'?")])
+    print(response.tool_calls)
 
 
 if __name__ == "__main__":
