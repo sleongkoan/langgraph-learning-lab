@@ -41,7 +41,12 @@ def build_graph():
        calls -- each call starts from exactly the input dict you give it,
        nothing more.
     """
-    raise NotImplementedError
+    graph = StateGraph(ChatState)
+    graph.add_node("call_model", call_model)
+    graph.add_edge(START, "call_model")
+    graph.add_edge("call_model", END)
+    app = graph.compile(checkpointer=MemorySaver())
+    return app
 
 
 def part1_threads(app):
@@ -63,7 +68,17 @@ def part1_threads(app):
        notice it has no idea -- threads are isolated conversations.
     4. Return config_a (part 2 reuses it).
     """
-    raise NotImplementedError
+    config_a = {"configurable": {"thread_id": "thread-a"}}
+    app.invoke(
+        {"messages": [HumanMessage(content="My name is Sam.")]}, config=config_a)
+    response_a = app.invoke(
+        {"messages": [HumanMessage(content="What's my name?")]}, config=config_a)
+    print(response_a["messages"][0].content)
+    config_b = {"configurable": {"thread_id": "thread-b"}}
+    response_b = app.invoke(
+        {"messages": [HumanMessage(content="What's my name?")]}, config=config_b)
+    print(response_b["messages"][0].content)
+    return config_a
 
 
 def part2_inspect_state(app, config):
@@ -78,7 +93,10 @@ def part2_inspect_state(app, config):
     get_state_history is how you reconstruct exactly what it saw and did,
     step by step.
     """
-    raise NotImplementedError
+    state = app.get_state(config)
+    print(state.values["messages"])
+    history = list(app.get_state_history(config))
+    print(len(history))
 
 
 if __name__ == "__main__":
