@@ -7,6 +7,9 @@ and reducers. This is the actual orchestration layer this course is about.
 Run with:
     .venv\\Scripts\\python.exe modules\\02_langgraph_basics\\exercise.py
 """
+from langgraph.graph.message import add_messages
+from langgraph.graph import StateGraph, START, END
+from langchain_core.messages import HumanMessage
 from typing import TypedDict, Annotated
 import sys
 from pathlib import Path
@@ -14,9 +17,6 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from common.llm import get_chat_model
-from langchain_core.messages import HumanMessage
-from langgraph.graph import StateGraph, START, END
-from langgraph.graph.message import add_messages
 
 
 # ---------------------------------------------------------------------------

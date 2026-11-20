@@ -8,6 +8,10 @@ done. This is the pattern almost every real "agent" is built from underneath.
 Run with:
     .venv\\Scripts\\python.exe modules\\03_tool_agent\\exercise.py
 """
+from langgraph.graph.message import add_messages
+from langgraph.graph import StateGraph, START, END
+from langchain_core.tools import tool
+from langchain_core.messages import HumanMessage, ToolMessage
 from typing import Annotated, TypedDict
 import sys
 from pathlib import Path
@@ -15,10 +19,6 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from common.llm import get_chat_model
-from langchain_core.messages import HumanMessage, ToolMessage
-from langchain_core.tools import tool
-from langgraph.graph import StateGraph, START, END
-from langgraph.graph.message import add_messages
 
 
 class AgentState(TypedDict):

@@ -14,15 +14,15 @@ returns whichever chat model your .env configures (Ollama by default, or
 OpenAI/Anthropic/Gemini/etc. if you set MODEL_PROVIDER/MODEL_NAME) -- the
 rest of this module's code never changes based on that choice.
 """
+from langchain_core.tools import tool
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from common.llm import get_chat_model
-from langchain_core.messages import HumanMessage, SystemMessage
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.tools import tool
 
 
 def part1_basic_call():
