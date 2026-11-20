@@ -67,7 +67,10 @@ def call_agent(state: AgentState) -> dict:
 
     Same shape as module 2 part 3's call_model, just with tools bound.
     """
-    raise NotImplementedError
+    model = get_chat_model()
+    model = model.bind_tools(TOOLS)
+    response = model.invoke(state["messages"])
+    return {"messages": [response]}
 
 
 def call_tools(state: AgentState) -> dict:
@@ -87,7 +90,18 @@ def call_tools(state: AgentState) -> dict:
            model match this result back to the request it made.
     3. Return {"messages": [<list of ToolMessages>]}
     """
-    raise NotImplementedError
+    last_message = state["messages"][-1]
+    tool_messages = []
+    for call in getattr(last_message, "tool_calls", []):
+        tool_fn = TOOLS_BY_NAME[call["name"]]
+        try:
+            result = tool_fn.invoke(call["args"])
+            content = str(result)
+        except Exception as e:
+            content = f"Error calling {call['name']}: {e}"
+        tool_messages.append(ToolMessage(
+            content=content, tool_call_id=call["id"]))
+    return {"messages": tool_messages}
 
 
 def should_continue(state: AgentState) -> str:
@@ -95,7 +109,8 @@ def should_continue(state: AgentState) -> str:
     TODO: look at the last message's .tool_calls. Return "continue" if it's
     non-empty (the agent wants to use a tool), otherwise return "end".
     """
-    raise NotImplementedError
+    last_message = state["messages"][-1]
+    return "continue" if getattr(last_message, "tool_calls", []) else "end"
 
 
 def build_agent_graph():
@@ -110,7 +125,15 @@ def build_agent_graph():
        like; then add it back and compare.
     5. Compile and return the app.
     """
-    raise NotImplementedError
+    graph = StateGraph(AgentState)
+    graph.add_node("agent", call_agent)
+    graph.add_node("tools", call_tools)
+    graph.add_edge(START, "agent")
+    graph.add_conditional_edges("agent", should_continue,
+                                {"continue": "tools", "end": END})
+    graph.add_edge("tools", "agent")
+    app = graph.compile()
+    return app
 
 
 def run_agent(question: str):
